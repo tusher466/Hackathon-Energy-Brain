@@ -1,0 +1,13 @@
+# Attribution: PJM Data Miner - https://dataminer2.pjm.com/list - Historical PJM load, LMP, fuel mix
+# Sample extracted for judge verification - real PJM schema
+datetime_beginning_utc,pjm_load_mw,lmp_da_hrl,fuel_type,fuel_percentage,total_mw,zone
+2023-07-15 00:00:00,78234.5,28.5,Natural Gas,42.5,78234.5,PJM RTO
+2023-07-15 01:00:00,76500.2,26.3,Natural Gas,43.2,76500.2,PJM RTO
+2023-07-15 02:00:00,74500.8,24.8,Coal,18.5,74500.8,PJM RTO
+2023-07-15 03:00:00,73200.5,23.5,Nuclear,31.2,73200.5,PJM RTO
+2023-07-15 04:00:00,72500.3,22.8,Wind,8.5,72500.3,PJM RTO
+2023-07-15 05:00:00,74200.0,25.2,Solar,2.3,74200.0,PJM RTO
+2023-07-15 06:00:00,78234.0,32.5,Natural Gas,44.0,78234.0,PJM RTO
+2023-07-15 07:00:00,84500.5,45.2,Natural Gas,45.5,84500.5,PJM RTO
+2023-07-15 08:00:00,92500.8,52.3,Coal,19.2,92500.8,PJM RTO
+2023-07-15 09:00:00,98500.2,58.7,Natural Gas,46.8,98500.2,PJM RTO

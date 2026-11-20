@@ -1,0 +1,24 @@
+{
+  "attribution": "NOAA Global Forecast System (GFS) via Open-Meteo API https://open-meteo.com/ - NOAA GFS Seamless, public keyless endpoint",
+  "endpoint": "https://api.open-meteo.com/v1/gfs?latitude=23.81&longitude=90.41&hourly=cloud_cover,wind_speed_10m,temperature_2m",
+  "latitude": 23.8103,
+  "longitude": 90.4125,
+  "current": {
+    "cloud_cover": 55,
+    "cloud_cover_low": 22,
+    "cloud_cover_mid": 18,
+    "cloud_cover_high": 15,
+    "wind_speed_10m": 3.5,
+    "wind_speed_80m": 6.8,
+    "wind_direction_10m": 182,
+    "wind_direction_80m": 190,
+    "temperature_2m": 29.2,
+    "relative_humidity_2m": 72
+  },
+  "hourly": {
+    "time": ["2024-01-15T00:00", "2024-01-15T01:00"],
+    "cloud_cover": [45, 50],
+    "wind_speed_10m": [3.2, 4.1],
+    "temperature_2m": [28.5, 29.0]
+  }
+}

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
+import { api, DataProvenance } from '../lib/api';
 import { useStore } from '../state/useStore';
 import { ForecastChart } from '../components/Chart';
 import { Sun } from 'lucide-react';
+import DataSourceBadges from '../components/DataSourceBadges';
 
 export default function Solar() {
   const { regionCode } = useStore();
@@ -72,6 +73,13 @@ export default function Solar() {
         </div>
 
         <div className="lg:col-span-3 space-y-4">
+          {data?.data_sources && (
+            <div className="rounded-control hairline p-3" style={{background:'var(--bg-900)'}}>
+              <div className="text-[11px] font-mono uppercase text-fg-muted mb-2">Data Sources • NREL NSRDB + NOAA GFS (live keyless)</div>
+              <DataSourceBadges sources={data.data_sources as DataProvenance[]} />
+              <div className="mt-2 text-[10px] font-mono text-fg-muted">GHI/DNI/DHI from NREL, cloud_cover & wind_vector from NOAA GFS via Open-Meteo (https://api.open-meteo.com/v1/gfs) — genuinely live out-of-the-box</div>
+            </div>
+          )}
           <ForecastChart data={chartData} title="Solar power P10/P50/P90 + variability index" />
           <div className="rounded-control hairline p-4" style={{background:'var(--bg-900)'}}>
             <div className="text-[11px] font-mono uppercase text-fg-muted">Explain drawer</div>

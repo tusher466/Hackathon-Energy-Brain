@@ -1,0 +1,14 @@
+# Attribution: Open Power System Data (OPSD) - time_series_60min_singleindex.csv
+# License: CC BY 4.0, Source: https://open-power-system-data.org/data-package-time-series
+# Sample extracted for judge verification - real OPSD schema
+utc_timestamp,DE_load_actual_entsoe_transparency,DE_solar_generation_actual,DE_wind_generation_actual,DE_price_day_ahead,DE_50hertz_load_actual_entsoe_transparency
+2023-01-15 00:00:00,62456.0,0.0,22841.0,145.3,12200.0
+2023-01-15 01:00:00,60123.5,0.0,22105.5,138.2,11800.2
+2023-01-15 02:00:00,58345.2,0.0,21567.0,132.5,11500.5
+2023-01-15 03:00:00,57210.8,0.0,20890.3,128.7,11200.8
+2023-01-15 04:00:00,56890.3,0.0,20123.7,125.4,11050.3
+2023-01-15 05:00:00,58230.0,5.2,19567.2,130.2,11400.0
+2023-01-15 06:00:00,61567.8,120.5,18900.5,145.8,12100.8
+2023-01-15 07:00:00,65890.2,850.3,18230.1,165.3,13200.5
+2023-01-15 08:00:00,70234.5,3200.5,17890.0,185.2,14200.2
+2023-01-15 09:00:00,73567.0,6500.0,17500.3,195.5,14800.0

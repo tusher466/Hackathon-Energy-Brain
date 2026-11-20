@@ -42,6 +42,20 @@ async function fetchJSON(path: string, opts: RequestInit = {}) {
   }
 }
 
+export type DataProvenance = {
+  source_id: 'nrel_nsrdb' | 'noaa_gfs' | 'electricity_maps' | 'opsd' | 'pjm_dataminer' | string;
+  source_name: string;
+  mode: 'live' | 'dataset_snapshot' | 'synthetic_fallback';
+  endpoint_or_dataset: string;
+  region_scope: string;
+  fields_ingested: string[];
+  fetched_at: string;
+  latency_ms: number;
+  sample_record: Record<string, any>;
+  status_code?: number;
+  description?: string;
+};
+
 export const api = {
   getRegions: () => fetchJSON('/api/v1/regions'),
   getRegion: (code: string) => fetchJSON(`/api/v1/regions/${code}`),
@@ -74,7 +88,8 @@ export const api = {
   ledgerReset: () => fetchJSON('/api/v1/ledger/reset', { method: 'POST' }),
   ledgerExport: () => fetchJSON('/api/v1/ledger/export/csv'),
   modelStatus: () => fetchJSON('/api/v1/models/status'),
-  integrations: () => fetchJSON('/api/v1/integrations'),
+  integrations: (): Promise<any[]> => fetchJSON('/api/v1/integrations'),
+  verifyIntegrations: (): Promise<any> => fetchJSON('/api/v1/integrations/verify', { method: 'POST' }),
   health: () => fetchJSON('/health'),
 };
 

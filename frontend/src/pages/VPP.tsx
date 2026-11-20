@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
+import { api, DataProvenance } from '../lib/api';
 import { useStore } from '../state/useStore';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Zap, Battery, Car } from 'lucide-react';
+import DataSourceBadges from '../components/DataSourceBadges';
 
 export default function VPP() {
   const { regionCode, regions } = useStore();
@@ -99,9 +100,16 @@ export default function VPP() {
         <div className="lg:col-span-3 space-y-4">
           {result ? (
             <>
+              {result.data_sources && (
+                <div className="rounded-control hairline p-3" style={{background:'var(--bg-900)'}}>
+                  <div className="text-[11px] font-mono uppercase text-fg-muted mb-2">Data Sources • Electricity Maps carbon intensity + {regionCode==='DE' ? 'OPSD price' : regionCode==='US' ? 'PJM LMP price' : 'regional tariff'}</div>
+                  <DataSourceBadges sources={result.data_sources as DataProvenance[]} />
+                  <div className="mt-2 text-[10px] font-mono text-fg-muted">Electricity Maps: {`https://api.electricitymap.org/v3/carbon-intensity/latest?zone=${regionCode==='DE'?'DE':regionCode==='US'?'US-MIDA-PJM':'BD'}`} • OPSD/PJM snapshot CSVs bundled for judge verification</div>
+                </div>
+              )}
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-control hairline p-4" style={{background:'var(--bg-900)'}}><div className="text-[11px] font-mono text-fg-muted">COST SAVED</div><div className="font-mono text-[24px] font-semibold mt-1">{currencySym}{result.cost_saved.toFixed(1)}</div><div className="text-[11px] text-fg-muted">Baseline {currencySym}{result.baseline_cost.toFixed(0)} → {currencySym}{result.optimized_cost.toFixed(0)}</div></div>
-                <div className="rounded-control hairline p-4" style={{background:'var(--bg-900)'}}><div className="text-[11px] font-mono text-fg-muted">CO₂ SAVED</div><div className="font-mono text-[24px] font-semibold mt-1">{result.co2_saved_kg.toFixed(0)} kg</div><div className="text-[11px] text-fg-muted">Lane: {regionCode} marginal factor</div></div>
+                <div className="rounded-control hairline p-4" style={{background:'var(--bg-900)'}}><div className="text-[11px] font-mono text-fg-muted">CO₂ SAVED</div><div className="font-mono text-[24px] font-semibold mt-1">{result.co2_saved_kg.toFixed(0)} kg</div><div className="text-[11px] text-fg-muted">Lane: {regionCode} marginal factor • Live carbon from Electricity Maps if available</div></div>
                 <div className="rounded-control hairline p-4" style={{background:'var(--bg-900)'}}><div className="text-[11px] font-mono text-fg-muted">PEAK SHAVED</div><div className="font-mono text-[24px] font-semibold mt-1">{result.peak_reduction_kw.toFixed(0)} kW</div><div className="text-[11px] text-fg-muted">{result.peak_before_kw.toFixed(0)} → {result.peak_after_kw.toFixed(0)} kW</div></div>
               </div>
 

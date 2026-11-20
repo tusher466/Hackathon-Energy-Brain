@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
+import { api, DataProvenance } from '../lib/api';
 import { useStore } from '../state/useStore';
 import { ForecastChart } from '../components/Chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import DataSourceBadges from '../components/DataSourceBadges';
 
 export default function Demand() {
   const { regionCode } = useStore();
@@ -69,6 +70,17 @@ export default function Demand() {
         </div>
 
         <div className="lg:col-span-3 space-y-4">
+          {data?.data_sources && (
+            <div className="rounded-control hairline p-3" style={{background:'var(--bg-900)'}}>
+              <div className="text-[11px] font-mono uppercase text-fg-muted mb-2">
+                Data Sources • {regionCode==='DE' ? 'OPSD EU for DE load/price' : regionCode==='US' ? 'PJM Data Miner for US load/LMP' : 'BD regional'} + NOAA GFS weather (live keyless)
+              </div>
+              <DataSourceBadges sources={data.data_sources as DataProvenance[]} />
+              <div className="mt-2 text-[10px] font-mono text-fg-muted">
+                {regionCode==='DE' ? 'OPSD bundled CSV opsd_de_sample.csv (CC BY 4.0) + live CSV from GitHub, fields DE_load_actual..., DE_price_day_ahead' : regionCode==='US' ? 'PJM bundled pjm_us_sample.csv + live API da_hrl_lmps, hrl_load_metered, gen_by_fuel' : 'NOAA GFS keyless Open-Meteo live temperature_2m, cloud_cover, wind_speed_10m'}
+              </div>
+            </div>
+          )}
           <ForecastChart data={chartData} title={`${regionCode} Demand forecast P10/P50/P90 – ${sites} sites`} />
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-control hairline p-4" style={{background:'var(--bg-900)'}}>

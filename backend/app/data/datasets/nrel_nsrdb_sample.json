@@ -1,0 +1,20 @@
+{
+  "attribution": "NREL National Solar Radiation Database (NSRDB) - Sample via NREL API, https://nsrdb.nrel.gov/, licensed under NREL terms",
+  "endpoint": "https://developer.nrel.gov/api/nsrdb/v2/solar/msl.json",
+  "inputs": {"lat": 23.81, "lon": 90.41, "year": 2022},
+  "outputs": {
+    "avg_ghi": {"annual": 4.92},
+    "avg_dni": {"annual": 5.85},
+    "avg_dhi": {"annual": 1.82}
+  },
+  "sample_hourly": {
+    "GHI": 820,
+    "DNI": 890,
+    "DHI": 150,
+    "temperature": 32.5,
+    "wind_speed": 3.2,
+    "cloud_type": 3,
+    "solar_zenith": 12.5,
+    "relative_humidity": 68
+  }
+}

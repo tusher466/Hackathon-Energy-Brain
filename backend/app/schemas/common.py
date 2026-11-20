@@ -1,6 +1,19 @@
-from pydantic import BaseModel
-from typing import List, Optional, Literal
+from pydantic import BaseModel, Field
+from typing import List, Optional, Literal, Dict, Any
 from datetime import datetime
+
+class DataProvenance(BaseModel):
+    source_id: str = Field(..., description="nrel_nsrdb | noaa_gfs | electricity_maps | opsd | pjm_dataminer")
+    source_name: str
+    mode: Literal["live", "dataset_snapshot", "synthetic_fallback"]
+    endpoint_or_dataset: str
+    region_scope: str
+    fields_ingested: List[str]
+    fetched_at: str
+    latency_ms: float
+    sample_record: Dict[str, Any]
+    status_code: Optional[int] = None
+    description: Optional[str] = None
 
 class RegionProfile(BaseModel):
     code: str
@@ -37,8 +50,9 @@ class SolarForecastResponse(BaseModel):
     cloud_frames: List[List[List[float]]]  # simplified representation
     motion_vector: List[float]
     model_version: str
-    source: Literal["synthetic", "live"]
+    source: Literal["synthetic", "live", "dataset_snapshot"]
     confidence: float
+    data_sources: List[DataProvenance] = Field(default_factory=list, description="5 data resources provenance")
 
 class DemandForecastRequest(BaseModel):
     region_code: str = "BD"
@@ -52,8 +66,9 @@ class DemandForecastResponse(BaseModel):
     feature_importance: dict
     backtest_mape: float
     backtest_pinball: float
-    source: Literal["synthetic", "live"]
+    source: Literal["synthetic", "live", "dataset_snapshot"]
     model_version: str
+    data_sources: List[DataProvenance] = Field(default_factory=list)
 
 class EVAsset(BaseModel):
     id: str
@@ -105,6 +120,7 @@ class VPPDispatchResponse(BaseModel):
     aggregate_after: List[float]
     explain: dict
     fairness_metrics: dict
+    data_sources: List[DataProvenance] = Field(default_factory=list)
 
 class GridEvent(BaseModel):
     type: str
@@ -195,10 +211,18 @@ class ApprovalItem(BaseModel):
 
 class IntegrationStatus(BaseModel):
     name: str
-    status: Literal["live", "synthetic", "offline"]
+    source_id: Optional[str] = None
+    status: Literal["live", "synthetic", "offline", "dataset_snapshot", "synthetic_fallback"]
+    mode: Optional[Literal["live", "dataset_snapshot", "synthetic_fallback"]] = None
     last_checked: datetime
     description: str
     requires_key: bool
+    region_scope: Optional[str] = None
+    endpoint_or_dataset: Optional[str] = None
+    fields_ingested: Optional[List[str]] = None
+    latency_ms: Optional[float] = None
+    sample_record: Optional[Dict[str, Any]] = None
+    modules: Optional[List[str]] = None
 
 class ModelStatus(BaseModel):
     name: str

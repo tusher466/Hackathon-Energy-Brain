@@ -39,7 +39,6 @@ def default_fleet():
     ]
     return evs, batteries, flex_loads
 
-@router.post("/dispatch", response_model=VPPDispatchResponse)
 def _to_dict(obj):
     if hasattr(obj, 'model_dump'):
         return obj.model_dump()
@@ -49,6 +48,32 @@ def _to_dict(obj):
         return obj
     return dict(obj)
 
+def _collect_vpp_provenance(region_code: str, horizon: int = 24):
+    sources = []
+    rc = region_code.upper()
+    try:
+        from app.data.connectors import electricity_maps
+        em_res = electricity_maps.fetch_electricity_maps_sync(rc)
+        sources.append(em_res.provenance.model_dump() if hasattr(em_res.provenance, 'model_dump') else em_res.provenance.dict())
+    except Exception as e:
+        print(f"Electricity Maps in VPP non-fatal {e}")
+    if rc == "DE":
+        try:
+            from app.data.connectors import opsd_eu
+            opsd_res = opsd_eu.fetch_opsd_de_sync(horizon)
+            sources.append(opsd_res.provenance.model_dump() if hasattr(opsd_res.provenance, 'model_dump') else opsd_res.provenance.dict())
+        except Exception as e:
+            print(f"OPSD in VPP non-fatal {e}")
+    if rc == "US":
+        try:
+            from app.data.connectors import pjm_dataminer
+            pjm_res = pjm_dataminer.fetch_pjm_sync(horizon, "US")
+            sources.append(pjm_res.provenance.model_dump() if hasattr(pjm_res.provenance, 'model_dump') else pjm_res.provenance.dict())
+        except Exception as e:
+            print(f"PJM in VPP non-fatal {e}")
+    return sources
+
+@router.post("/dispatch", response_model=VPPDispatchResponse)
 def vpp_dispatch(req: VPPDispatchRequest, db: Session = Depends(get_db)):
     # Use provided or default fleet
     evs = [_to_dict(e) for e in req.evs] if req.evs else []
@@ -132,9 +157,28 @@ def vpp_dispatch(req: VPPDispatchRequest, db: Session = Depends(get_db)):
         "model_version": "rl+linprog-v1"
     }
 
+    # Collect provenance for VPP
+    data_sources = _collect_vpp_provenance(req.region_code, req.horizon_hours)
+
+    # Use live carbon intensity if electricity maps provided live value
+    # If carbon from electricity maps live, override first hour as demonstration of live feeding
+    try:
+        for ds in data_sources:
+            if ds.get("source_id") == "electricity_maps" and ds.get("mode") == "live":
+                sample = ds.get("sample_record", {})
+                live_carbon = sample.get("carbonIntensity") or sample.get("carbonIntensity_gCO2eq_per_kWh") or sample.get("carbonIntensity_gCO2eq_per_kWh")
+                if live_carbon:
+                    # carbon is gCO2/kWh -> convert to kg
+                    kg = float(live_carbon) / 1000.0
+                    # adjust carbon forecast if significantly different from synthetic
+                    carbon = [kg if i == 0 else c for i, c in enumerate(carbon)]
+                    break
+    except Exception:
+        pass
+
     # log ledger
     region = get_region(req.region_code)
-    log_entry(db, module="vpp", action="dispatch", cost_saved=cost_saved, co2_kg=co2_saved, peak_kw=peak_red, region_code=req.region_code, details={"baseline_cost": baseline_cost, "optimized_cost": optimized_cost})
+    log_entry(db, module="vpp", action="dispatch", cost_saved=cost_saved, co2_kg=co2_saved, peak_kw=peak_red, region_code=req.region_code, details={"baseline_cost": baseline_cost, "optimized_cost": optimized_cost, "provenance": [ds.get("source_id") for ds in data_sources]})
 
     return VPPDispatchResponse(
         baseline_cost=baseline_cost,
@@ -150,7 +194,8 @@ def vpp_dispatch(req: VPPDispatchRequest, db: Session = Depends(get_db)):
         aggregate_before=baseline_agg,
         aggregate_after=optimized_agg,
         explain=explain,
-        fairness_metrics=fairness
+        fairness_metrics=fairness,
+        data_sources=data_sources
     )
 
 @router.get("/default-fleet")

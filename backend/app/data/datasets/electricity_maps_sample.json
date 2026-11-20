@@ -1,0 +1,38 @@
+{
+  "attribution": "Electricity Maps API https://api.electricitymap.org/ - real-time carbon intensity sample, licensed by Electricity Maps",
+  "endpoint": "https://api.electricitymap.org/v3/carbon-intensity/latest?zone=DE",
+  "samples": [
+    {
+      "zone": "DE",
+      "carbonIntensity": 420,
+      "carbonIntensityType": "direct",
+      "fossilFreePercentage": 58,
+      "renewablePercentage": 47,
+      "datetime": "2024-01-15T12:00:00Z",
+      "powerConsumptionBreakdown": {"solar": 8500, "wind": 12000, "coal": 8000, "gas": 6000, "nuclear": 0, "hydro": 1200}
+    },
+    {
+      "zone": "US-MIDA-PJM",
+      "carbonIntensity": 380,
+      "fossilFreePercentage": 42,
+      "renewablePercentage": 12,
+      "datetime": "2024-01-15T12:00:00Z",
+      "powerConsumptionBreakdown": {"gas": 25000, "coal": 8000, "nuclear": 30000, "wind": 3000, "solar": 500}
+    },
+    {
+      "zone": "BD",
+      "carbonIntensity": 680,
+      "fossilFreePercentage": 5,
+      "renewablePercentage": 3,
+      "datetime": "2024-01-15T12:00:00Z",
+      "powerConsumptionBreakdown": {"gas": 8000, "coal": 3000, "oil": 500}
+    }
+  ],
+  "current": {
+    "zone": "DE",
+    "carbonIntensity": 420,
+    "fossilFreePercentage": 58,
+    "renewablePercentage": 47,
+    "powerConsumptionBreakdown": {"solar": 8500, "wind": 12000, "coal": 8000, "gas": 6000}
+  }
+}
