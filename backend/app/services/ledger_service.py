@@ -1,13 +1,16 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
 from app.core.db import Base
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from typing import List
+
+def _utcnow():
+    return datetime.now(timezone.utc)
 
 class LedgerEntryDB(Base):
     __tablename__ = "ledger"
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=_utcnow)
     module = Column(String)
     action = Column(String)
     cost_saved = Column(Float)
@@ -19,7 +22,7 @@ class LedgerEntryDB(Base):
 class ApprovalDB(Base):
     __tablename__ = "approvals"
     id = Column(String, primary_key=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=_utcnow)
     action = Column(String)
     module = Column(String)
     description = Column(String)

@@ -1,5 +1,6 @@
 import sys
-sys.path.insert(0, "E:/Project/backend")
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.ml.optimizer import optimize_ev_fleet
 from app.ml.rl_agent import dispatch_with_rl_and_optimizer
 import random

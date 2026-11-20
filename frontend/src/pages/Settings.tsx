@@ -17,8 +17,8 @@ export default function Settings() {
   }, [regionCode]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="font-serif text-[32px] font-semibold">Settings • Integrations & Demo</h1>
+    <div className="space-y-6 overflow-x-hidden">
+      <h1 className="font-serif text-[24px] sm:text-[32px] font-semibold break-words">Settings • Integrations & Demo</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-control hairline p-4" style={{background:'var(--bg-900)'}}>

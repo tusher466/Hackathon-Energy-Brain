@@ -24,13 +24,13 @@ export default function Panels() {
   const curr = regions.find((r:any)=>r.code===regionCode);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between">
-        <div>
-          <h1 className="font-serif text-[32px] font-semibold">Panel Health Inspector • Thermography</h1>
-          <p className="text-[13px] text-fg-muted mt-1 max-w-[70ch]">Upload drone thermal image or use synthetic samples generated at startup. OpenCV pipeline: normalize, threshold hot regions, connected components, classify defect by shape/temp delta.</p>
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-serif text-[24px] sm:text-[32px] font-semibold break-words">Panel Health Inspector • Thermography</h1>
+          <p className="text-[12px] sm:text-[13px] text-fg-muted mt-1 max-w-[70ch] leading-relaxed">Upload drone thermal image or use synthetic samples generated at startup. OpenCV pipeline: normalize, threshold hot regions, connected components, classify defect by shape/temp delta.</p>
         </div>
-        <div className="text-[11px] font-mono px-3 py-1 rounded-full bg-ink-800 border">Loss est in {curr?.currency || 'BDT'}</div>
+        <div className="text-[11px] font-mono px-3 py-1 rounded-full bg-ink-800 border shrink-0 h-fit">Loss est in {curr?.currency || 'BDT'}</div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

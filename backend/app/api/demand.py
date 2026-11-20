@@ -4,7 +4,10 @@ from app.data.synthetic import generate_demand_timeseries
 from app.data.regions import get_region
 from app.ml.demand_transformer import demand_forecaster
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+def _utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 router = APIRouter(prefix="/demand", tags=["demand"])
 
@@ -13,8 +16,8 @@ def demand_forecast(req: DemandForecastRequest):
     synthetic = generate_demand_timeseries(req.region_code, req.sites, req.horizon_hours)
     # For ML model: we need historical (we generate 168h history)
     history_h = 168
-    hist_data = generate_demand_timeseries(req.region_code, req.sites, history_h, start_dt=datetime.utcnow()-timedelta(hours=history_h))
-    hist_timestamps = [datetime.utcnow()-timedelta(hours=history_h-i) for i in range(history_h)]
+    hist_data = generate_demand_timeseries(req.region_code, req.sites, history_h, start_dt=_utcnow()-timedelta(hours=history_h))
+    hist_timestamps = [_utcnow()-timedelta(hours=history_h-i) for i in range(history_h)]
     # but we already have synthetic list? Use synthetic from history
     hist_loads = [h["p50"] for h in hist_data]
     hist_temps = [25 + 5*np.sin(2*np.pi*(i%24)/24) + np.random.normal(0,1) for i in range(history_h)]

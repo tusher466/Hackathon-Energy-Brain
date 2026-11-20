@@ -33,10 +33,10 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className={`min-h-screen grain ${darkMode ? 'dark' : 'light'}`} style={{background: 'var(--bg-950)'}}>
-      <div className="flex min-h-screen">
+    <div className={`min-h-screen grain ${darkMode ? 'dark' : 'light'} overflow-x-hidden`} style={{background: 'var(--bg-950)'}}>
+      <div className="flex min-h-screen overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-[260px] shrink-0 border-r hairline hidden lg:flex flex-col" style={{background: 'var(--bg-900)', borderColor: 'var(--border)'}}>
+        <aside className="w-[260px] shrink-0 border-r hairline hidden lg:flex flex-col sticky top-0 h-screen overflow-y-auto z-20" style={{background: 'var(--bg-900)', borderColor: 'var(--border)'}}>
           <div className="p-6 border-b hairline" style={{borderColor: 'var(--border)'}}>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-[8px] flex items-center justify-center" style={{background: '#E0A73A'}}>
@@ -87,27 +87,29 @@ export default function Layout() {
         </aside>
 
         {/* Main */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Top bar mobile */}
-          <div className="lg:hidden flex items-center justify-between p-4 border-b hairline" style={{background: 'var(--bg-900)'}}>
-            <div className="font-serif font-semibold">Energy Brain</div>
-            <div className="flex gap-2">
-              <select value={regionCode} onChange={e=>setRegion(e.target.value)} className="bg-transparent border hairline rounded px-2 py-1 text-[12px]"><option value="BD">BD</option><option value="DE">DE</option><option value="US">US</option></select>
-              <button onClick={toggleDark} className="px-2 py-1 border rounded text-[12px]">{darkMode?'Light':'Dark'}</button>
+          <div className="lg:hidden flex items-center justify-between p-4 border-b hairline sticky top-0 z-10" style={{background: 'var(--bg-900)'}}>
+            <div className="font-serif font-semibold truncate">Energy Brain</div>
+            <div className="flex gap-2 shrink-0">
+              <select value={regionCode} onChange={e=>setRegion(e.target.value)} className="bg-transparent border hairline rounded px-2 py-1 text-[12px] max-w-[80px]"><option value="BD">BD</option><option value="DE">DE</option><option value="US">US</option></select>
+              <button onClick={toggleDark} className="px-2 py-1 border rounded text-[12px] shrink-0">{darkMode?'Light':'Dark'}</button>
             </div>
           </div>
           {/* Mobile nav */}
-          <div className="lg:hidden flex gap-1 p-2 overflow-auto border-b hairline">
-            {nav.map(n=> <NavLink key={n.to} to={n.to} className={({isActive})=> `px-3 py-2 rounded text-[12px] whitespace-nowrap ${isActive ? 'bg-amber-signal text-black' : 'bg-ink-800 text-fg-muted'}`}>{n.label}</NavLink>)}
+          <div className="lg:hidden flex gap-1 p-2 overflow-x-auto border-b hairline scrollbar-hide">
+            {nav.map(n=> <NavLink key={n.to} to={n.to} className={({isActive})=> `px-3 py-2 rounded text-[12px] whitespace-nowrap shrink-0 ${isActive ? 'bg-amber-signal text-black' : 'bg-ink-800 text-fg-muted'}`}>{n.label}</NavLink>)}
           </div>
 
-          <main className="flex-1 p-4 lg:p-8">
-            <Outlet />
+          <main className="flex-1 p-3 sm:p-4 lg:p-8 overflow-y-auto overflow-x-hidden">
+            <div className="max-w-[1600px] mx-auto w-full">
+              <Outlet />
+            </div>
           </main>
 
-          <footer className="p-4 border-t hairline text-[11px] font-mono text-fg-muted flex justify-between" style={{borderColor:'var(--border)'}}>
-            <span>Energy Brain • Control room at dusk • Offline-first • Synthetic fallback live</span>
-            <span>{loc.pathname}</span>
+          <footer className="p-3 sm:p-4 border-t hairline text-[10px] sm:text-[11px] font-mono text-fg-muted flex flex-col sm:flex-row gap-1 sm:gap-0 sm:justify-between" style={{borderColor:'var(--border)'}}>
+            <span className="truncate">Energy Brain • Control room at dusk • Offline-first • Synthetic fallback live</span>
+            <span className="shrink-0">{loc.pathname}</span>
           </footer>
         </div>
       </div>

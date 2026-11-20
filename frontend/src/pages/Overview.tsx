@@ -47,28 +47,28 @@ export default function Overview() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap justify-between gap-4 items-end">
-        <div>
-          <h1 className="font-serif text-[36px] font-semibold tracking-tight leading-none">Control Room • Today</h1>
-          <p className="mt-3 text-[14px] text-fg-muted max-w-[60ch]">Forecast → Uncertainty → Optimize → Act → Explain → Measure. One loop, seven modules, cross-border tariffs. Charge 42 EVs between 01:00 and 04:30. Saves 118 USD. Confidence 91%.</p>
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex flex-col lg:flex-row lg:justify-between gap-4 lg:items-end">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-serif text-[28px] sm:text-[36px] font-semibold tracking-tight leading-none break-words">Control Room • Today</h1>
+          <p className="mt-3 text-[13px] sm:text-[14px] text-fg-muted max-w-[60ch] leading-relaxed">Forecast → Uncertainty → Optimize → Act → Explain → Measure. One loop, seven modules, cross-border tariffs. Charge 42 EVs between 01:00 and 04:30. Saves 118 USD. Confidence 91%.</p>
         </div>
-        <div className="flex gap-2">
-          <button disabled={isSim} onClick={startSim} className="flex items-center gap-2 px-4 py-2.5 rounded-control bg-amber-signal text-black text-[13px] font-semibold hover:bg-amber-hover disabled:opacity-50">
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <button disabled={isSim} onClick={startSim} className="flex items-center gap-2 px-4 py-2.5 rounded-control bg-amber-signal text-black text-[13px] font-semibold hover:bg-amber-hover disabled:opacity-50 shrink-0">
             <Play className="w-4 h-4" /> Simulate a day (60s)
           </button>
-          <button onClick={stopSim} className="px-3 py-2.5 rounded-control hairline text-[13px] flex items-center gap-2"><Pause className="w-4 h-4" /> Pause</button>
-          <button onClick={()=>{setSimData([]); setScrub(0);}} className="px-3 py-2.5 rounded-control hairline text-[13px]"><RotateCcw className="w-4 h-4" /></button>
+          <button onClick={stopSim} className="px-3 py-2.5 rounded-control hairline text-[13px] flex items-center gap-2 shrink-0"><Pause className="w-4 h-4" /> Pause</button>
+          <button onClick={()=>{setSimData([]); setScrub(0);}} className="px-3 py-2.5 rounded-control hairline text-[13px] shrink-0"><RotateCcw className="w-4 h-4" /></button>
         </div>
       </div>
 
       <KPIStrip data={ledgerSummary} />
 
       {/* Timeline */}
-      <div className="rounded-control hairline p-4" style={{background:'var(--bg-900)', borderColor:'var(--border)'}}>
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-[12px] font-mono uppercase tracking-widest text-fg-muted">Next 24h decision timeline • Region {regionCode}</div>
-          <div className="flex gap-2 text-[11px] font-mono">
+      <div className="rounded-control hairline p-3 sm:p-4 overflow-hidden" style={{background:'var(--bg-900)', borderColor:'var(--border)'}}>
+        <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:items-center mb-4">
+          <div className="text-[11px] sm:text-[12px] font-mono uppercase tracking-widest text-fg-muted">Next 24h decision timeline • Region {regionCode}</div>
+          <div className="flex gap-2 text-[11px] font-mono shrink-0">
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-amber-signal rounded-full"></span>Solar</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-moss rounded-full"></span>Demand</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-slate-400 rounded-full"></span>Price</span>
@@ -100,17 +100,17 @@ export default function Overview() {
             </div>
           </div>
         )}
-        <div className="mt-4 flex items-center gap-3">
-          <input type="range" min={0} max={23} value={scrub} onChange={e=>setScrub(Number(e.target.value))} className="flex-1" />
-          <div className="font-mono text-[12px] text-fg-muted">{scrub}:00 scrubber</div>
+        <div className="mt-4 flex items-center gap-3 min-w-0">
+          <input type="range" min={0} max={23} value={scrub} onChange={e=>setScrub(Number(e.target.value))} className="flex-1 min-w-0" />
+          <div className="font-mono text-[12px] text-fg-muted shrink-0">{scrub}:00 scrubber</div>
         </div>
       </div>
 
       {/* Asset map / flow */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 rounded-control hairline p-4" style={{background:'var(--bg-900)'}}>
+        <div className="lg:col-span-2 rounded-control hairline p-3 sm:p-4 overflow-hidden" style={{background:'var(--bg-900)'}}>
           <div className="text-[12px] font-mono uppercase tracking-widest text-fg-muted mb-4">Live Asset Flow</div>
-          <div className="relative h-[300px] border hairline rounded-[8px] p-4 overflow-hidden" style={{borderColor:'var(--border)', background:'var(--bg-800)'}}>
+          <div className="relative h-[300px] sm:h-[340px] border hairline rounded-[8px] p-2 sm:p-4 overflow-hidden" style={{borderColor:'var(--border)', background:'var(--bg-800)'}}>
             {/* SVG flow diagram */}
             <svg viewBox="0 0 600 280" className="w-full h-full">
               <defs>

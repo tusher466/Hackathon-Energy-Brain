@@ -12,10 +12,10 @@ export default function KPIStrip({ data }: { data?: any }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {items.map(it=>(
-        <div key={it.label} className="rounded-control hairline p-4" style={{background:'var(--bg-900)', borderColor:'var(--border)'}}>
-          <div className="text-[11px] font-mono tracking-widest text-fg-muted uppercase">{it.label}</div>
-          <div className="font-serif text-[28px] font-semibold mt-2 tracking-tight tabular-nums">{it.value}</div>
-          <div className="text-[11px] font-mono text-fg-muted mt-1">{it.sub}</div>
+        <div key={it.label} className="rounded-control hairline p-3 sm:p-4 overflow-hidden min-w-0" style={{background:'var(--bg-900)', borderColor:'var(--border)'}}>
+          <div className="text-[10px] sm:text-[11px] font-mono tracking-widest text-fg-muted uppercase truncate">{it.label}</div>
+          <div className="font-serif text-[20px] sm:text-[28px] font-semibold mt-2 tracking-tight tabular-nums break-words leading-tight">{it.value}</div>
+          <div className="text-[10px] sm:text-[11px] font-mono text-fg-muted mt-1 truncate">{it.sub}</div>
         </div>
       ))}
     </div>

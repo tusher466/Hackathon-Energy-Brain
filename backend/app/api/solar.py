@@ -4,7 +4,10 @@ from app.data.synthetic import generate_solar_timeseries
 from app.data.regions import get_region
 from app.ml.cloud_motion import estimate_motion
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timezone
+
+def _now_iso():
+    return datetime.now(timezone.utc).isoformat()
 
 router = APIRouter(prefix="/solar", tags=["solar"])
 
@@ -74,6 +77,6 @@ def solar_forecast_get(
 @router.get("/integrations")
 def solar_integrations():
     return [
-        {"name": "NREL NSRDB", "status": "synthetic", "last_checked": datetime.utcnow().isoformat(), "description": "Irradiance live requires NREL_API_KEY", "requires_key": True},
-        {"name": "NOAA GFS", "status": "synthetic", "last_checked": datetime.utcnow().isoformat(), "description": "Cloud cover GFS fallback synthetic", "requires_key": False},
+        {"name": "NREL NSRDB", "status": "synthetic", "last_checked": _now_iso(), "description": "Irradiance live requires NREL_API_KEY", "requires_key": True},
+        {"name": "NOAA GFS", "status": "synthetic", "last_checked": _now_iso(), "description": "Cloud cover GFS fallback synthetic", "requires_key": False},
     ]

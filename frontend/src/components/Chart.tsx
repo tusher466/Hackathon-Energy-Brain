@@ -2,14 +2,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 export function ForecastChart({ data, title }: { data: any[], title?: string }) {
   return (
-    <div className="rounded-control hairline p-4" style={{background:'var(--bg-900)', borderColor:'var(--border)'}}>
-      {title && <div className="text-[12px] font-mono text-fg-muted mb-3 uppercase tracking-widest">{title}</div>}
-      <div className="h-[280px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data}>
+    <div className="rounded-control hairline p-3 sm:p-4 overflow-hidden" style={{background:'var(--bg-900)', borderColor:'var(--border)'}}>
+      {title && <div className="text-[11px] sm:text-[12px] font-mono text-fg-muted mb-3 uppercase tracking-widest break-words">{title}</div>}
+      <div className="h-[240px] sm:h-[280px] w-full min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="2 4" stroke="#26322C" opacity={0.6} />
-            <XAxis dataKey="time" tick={{fontSize:10, fill:'#8E9A92'}} />
-            <YAxis tick={{fontSize:10, fill:'#8E9A92'}} />
+            <XAxis dataKey="time" tick={{fontSize:10, fill:'#8E9A92'}} interval="preserveStartEnd" minTickGap={20} />
+            <YAxis tick={{fontSize:10, fill:'#8E9A92'}} width={45} />
             <Tooltip contentStyle={{background:'#131A17', border:'1px solid #26322C', borderRadius:8, fontSize:12}} />
             <Area type="monotone" dataKey="p90" stroke="none" fill="#E0A73A" fillOpacity={0.15} />
             <Area type="monotone" dataKey="p10" stroke="none" fill="#0D1210" fillOpacity={0.8} />
@@ -19,7 +19,7 @@ export function ForecastChart({ data, title }: { data: any[], title?: string }) 
           </ComposedChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-3 flex gap-4 text-[10px] font-mono text-fg-muted">
+      <div className="mt-3 flex flex-wrap gap-4 text-[10px] font-mono text-fg-muted">
         <span className="flex items-center gap-1"><span className="w-3 h-[2px] bg-[#E0A73A] block"></span>P50 median</span>
         <span className="flex items-center gap-1"><span className="w-3 h-[2px] block" style={{background:'#5F8F6B', borderTop:'1px dashed'}}></span>P10/P90 confidence</span>
       </div>

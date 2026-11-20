@@ -26,13 +26,13 @@ export default function Solar() {
   })) || [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="font-serif text-[32px] font-semibold">Solar Forecast Studio</h1>
-          <p className="text-[13px] text-fg-muted mt-1 max-w-[70ch]">Clear-sky geometry × cloud transmission advected by motion vector (phase correlation). P10/P50/P90 bands + variability index. Synthetic fallback when no NREL key.</p>
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex flex-col lg:flex-row lg:justify-between gap-3 lg:items-start">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-serif text-[24px] sm:text-[32px] font-semibold break-words">Solar Forecast Studio</h1>
+          <p className="text-[12px] sm:text-[13px] text-fg-muted mt-1 max-w-[70ch] leading-relaxed">Clear-sky geometry × cloud transmission advected by motion vector (phase correlation). P10/P50/P90 bands + variability index. Synthetic fallback when no NREL key.</p>
         </div>
-        <div className="flex items-center gap-2 text-[11px] font-mono px-3 py-1 rounded-full bg-ink-800 border"><Sun className="w-4 h-4 text-amber-signal" /> Model: {data?.model_version || 'clearsky'} • Conf {data?.confidence ? (data.confidence*100).toFixed(0)+'%' : '91%'} • Source {data?.source}</div>
+        <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-mono px-3 py-1 rounded-full bg-ink-800 border shrink-0 break-all"><Sun className="w-4 h-4 text-amber-signal shrink-0" /> Model: {data?.model_version || 'clearsky'} • Conf {data?.confidence ? (data.confidence*100).toFixed(0)+'%' : '91%'} • Source {data?.source}</div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

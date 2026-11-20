@@ -45,14 +45,14 @@ export default function VPP() {
   const currencySym = regions.find((r:any)=>r.code===regionCode)?.currency_symbol || '৳';
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="font-serif text-[32px] font-semibold">VPP Dispatch Agent</h1>
-          <p className="text-[13px] text-fg-muted mt-1 max-w-[75ch]">Fleet simulator: N EVs with arrival/departure + SoC constraints, M batteries, flexible loads. Two controllers side-by-side: Baseline immediate charging vs Smart RL+LP optimizer with safety layer guaranteeing 100% SoC.</p>
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:items-start">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-serif text-[24px] sm:text-[32px] font-semibold break-words">VPP Dispatch Agent</h1>
+          <p className="text-[12px] sm:text-[13px] text-fg-muted mt-1 max-w-[75ch] leading-relaxed">Fleet simulator: N EVs with arrival/departure + SoC constraints, M batteries, flexible loads. Two controllers side-by-side: Baseline immediate charging vs Smart RL+LP optimizer with safety layer guaranteeing 100% SoC.</p>
         </div>
-        <div className="flex gap-2">
-          <div className="text-[11px] font-mono px-3 py-1 rounded-full bg-ink-800 border">λ CO₂ {lambdaCo2} • μ peak {muPeak}</div>
+        <div className="flex gap-2 shrink-0">
+          <div className="text-[11px] font-mono px-3 py-1 rounded-full bg-ink-800 border whitespace-nowrap">λ CO₂ {lambdaCo2} • μ peak {muPeak}</div>
         </div>
       </div>
 

@@ -29,13 +29,13 @@ export default function Grid() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between">
-        <div>
-          <h1 className="font-serif text-[32px] font-semibold">Grid Operator Copilot • Black Start Simulator</h1>
-          <p className="text-[13px] text-fg-muted mt-1 max-w-[70ch]">Scenario engine with synthetic renewable failure data. Deterministic recovery sequence with islands, cranking power, load pickup steps, frequency/voltage checks. Copilot RAG over local knowledge base; LLM never controls grid.</p>
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex flex-col lg:flex-row lg:justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-serif text-[24px] sm:text-[32px] font-semibold break-words">Grid Operator Copilot • Black Start Simulator</h1>
+          <p className="text-[12px] sm:text-[13px] text-fg-muted mt-1 max-w-[70ch] leading-relaxed">Scenario engine with synthetic renewable failure data. Deterministic recovery sequence with islands, cranking power, load pickup steps, frequency/voltage checks. Copilot RAG over local knowledge base; LLM never controls grid.</p>
         </div>
-        <div className="text-[11px] font-mono px-3 py-1 rounded-full bg-ink-800 border">Human-in-the-loop • Approve each step</div>
+        <div className="text-[10px] sm:text-[11px] font-mono px-3 py-1 rounded-full bg-ink-800 border shrink-0 h-fit">Human-in-the-loop • Approve each step</div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -71,13 +71,13 @@ export default function Grid() {
         <div className="lg:col-span-3 space-y-4">
           {data ? (
             <>
-              <div className="rounded-control hairline p-4" style={{background:'var(--bg-900)'}}>
-                <div className="flex justify-between items-center mb-4">
+              <div className="rounded-control hairline p-3 sm:p-4 overflow-hidden" style={{background:'var(--bg-900)'}}>
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:items-center mb-4">
                   <div className="text-[11px] font-mono uppercase text-fg-muted">Recovery timeline • SVG network re-energization</div>
-                  <div className="flex gap-2">
-                    <button onClick={()=>setStepIdx(s=>Math.max(0,s-1))} className="px-3 py-1 rounded border text-[12px]">Prev</button>
-                    <button onClick={()=>setStepIdx(s=>Math.min(data.recovery_plan.length-1,s+1))} className="px-3 py-1 rounded bg-amber-signal text-black text-[12px]">Next step</button>
-                    <span className="font-mono text-[12px] px-2 py-1">Step {stepIdx+1}/{data.recovery_plan.length}</span>
+                  <div className="flex gap-2 items-center flex-wrap shrink-0">
+                    <button onClick={()=>setStepIdx(s=>Math.max(0,s-1))} className="px-3 py-1 rounded border text-[12px] shrink-0">Prev</button>
+                    <button onClick={()=>setStepIdx(s=>Math.min(data.recovery_plan.length-1,s+1))} className="px-3 py-1 rounded bg-amber-signal text-black text-[12px] shrink-0">Next step</button>
+                    <span className="font-mono text-[12px] px-2 py-1 shrink-0">Step {stepIdx+1}/{data.recovery_plan.length}</span>
                   </div>
                 </div>
 

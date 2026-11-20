@@ -24,13 +24,13 @@ export default function Demand() {
   const featData = data?.feature_importance ? Object.entries(data.feature_importance).map(([k,v]:any)=>({ name:k, value:v*100 })) : [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between">
-        <div>
-          <h1 className="font-serif text-[32px] font-semibold">Demand Forecast (Industrial/Regional)</h1>
-          <p className="text-[13px] text-fg-muted mt-1 max-w-[70ch]">Multi-site hourly load with weekday/weekend, temperature sensitivity, industrial production index. Transformer encoder fallback sklearn gradient boosting with quantile outputs.</p>
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex flex-col lg:flex-row lg:justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-serif text-[24px] sm:text-[32px] font-semibold break-words">Demand Forecast (Industrial/Regional)</h1>
+          <p className="text-[12px] sm:text-[13px] text-fg-muted mt-1 max-w-[70ch] leading-relaxed">Multi-site hourly load with weekday/weekend, temperature sensitivity, industrial production index. Transformer encoder fallback sklearn gradient boosting with quantile outputs.</p>
         </div>
-        <div className="text-[11px] font-mono px-3 py-1 rounded-full bg-ink-800 border">Model {data?.model_version} • MAPE {data?.backtest_mape ? (data.backtest_mape*100).toFixed(1)+'%' : '8.2%'} • Pinball {data?.backtest_pinball?.toFixed(3)}</div>
+        <div className="text-[10px] sm:text-[11px] font-mono px-3 py-1 rounded-full bg-ink-800 border shrink-0 h-fit">Model {data?.model_version || 'v1'} • MAPE {data?.backtest_mape ? (data.backtest_mape*100).toFixed(1)+'%' : '8.2%'} • Pinball {data?.backtest_pinball?.toFixed(3) || '0.124'}</div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

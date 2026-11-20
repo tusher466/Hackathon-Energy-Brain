@@ -1,5 +1,6 @@
 import sys
-sys.path.insert(0, "E:/Project/backend")
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.data.synthetic import generate_solar_timeseries
 from app.ml.cloud_motion import estimate_motion
 import numpy as np

@@ -40,11 +40,20 @@ def default_fleet():
     return evs, batteries, flex_loads
 
 @router.post("/dispatch", response_model=VPPDispatchResponse)
+def _to_dict(obj):
+    if hasattr(obj, 'model_dump'):
+        return obj.model_dump()
+    if hasattr(obj, 'dict'):
+        return obj.dict()
+    if isinstance(obj, dict):
+        return obj
+    return dict(obj)
+
 def vpp_dispatch(req: VPPDispatchRequest, db: Session = Depends(get_db)):
     # Use provided or default fleet
-    evs = [e.dict() if hasattr(e, 'dict') else e for e in req.evs] if req.evs else []
-    bats = [b.dict() if hasattr(b,'dict') else b for b in req.batteries] if req.batteries else []
-    flexs = [f.dict() if hasattr(f,'dict') else f for f in req.flexible_loads] if req.flexible_loads else []
+    evs = [_to_dict(e) for e in req.evs] if req.evs else []
+    bats = [_to_dict(b) for b in req.batteries] if req.batteries else []
+    flexs = [_to_dict(f) for f in req.flexible_loads] if req.flexible_loads else []
 
     if not evs:
         evs_def, bats_def, flexs_def = default_fleet()

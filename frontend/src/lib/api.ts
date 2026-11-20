@@ -1,19 +1,45 @@
 const envUrl = import.meta.env.VITE_API_URL;
 const API_BASE = envUrl === undefined ? 'http://localhost:8000' : envUrl;
 
-async function fetchJSON(path: string, opts: RequestInit = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(opts.headers || {})
-    }
-  });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`API ${path} failed ${res.status}: ${txt}`);
+// Market-ready fetch with timeout and better error handling
+async function fetchWithTimeout(url: string, opts: RequestInit = {}, timeoutMs = 15000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...opts, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(id);
   }
-  return res.json();
+}
+
+async function fetchJSON(path: string, opts: RequestInit = {}) {
+  const url = `${API_BASE}${path}`;
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(url, {
+      ...opts,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(opts.headers || {}),
+      },
+    });
+  } catch (e: any) {
+    if (e.name === 'AbortError') throw new Error(`API ${path} timeout after 15s`);
+    throw new Error(`API ${path} network error: ${e.message}`);
+  }
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    // Provide nicer message
+    throw new Error(`API ${path} failed ${res.status}: ${txt.slice(0,500)}`);
+  }
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text as any;
+  }
 }
 
 export const api = {
@@ -34,8 +60,11 @@ export const api = {
     const form = new FormData();
     form.append('file', file);
     form.append('region_code', region_code);
-    const res = await fetch(`${API_BASE}/api/v1/panels/inspect`, { method: 'POST', body: form });
-    if (!res.ok) throw new Error('inspect failed');
+    const res = await fetchWithTimeout(`${API_BASE}/api/v1/panels/inspect`, { method: 'POST', body: form }, 30000);
+    if (!res.ok) {
+      const txt = await res.text().catch(()=> '');
+      throw new Error(`inspect failed ${res.status}: ${txt.slice(0,300)}`);
+    }
     return res.json();
   },
   ledgerSummary: () => fetchJSON('/api/v1/ledger/summary'),

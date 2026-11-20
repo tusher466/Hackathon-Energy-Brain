@@ -1,5 +1,6 @@
 import sys
-sys.path.insert(0, "E:/Project/backend")
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.ml.thermal import generate_synthetic_thermal_sample
 
 def test_thermal():

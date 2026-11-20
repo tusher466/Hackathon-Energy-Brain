@@ -152,32 +152,49 @@ else:
 from fastapi.responses import StreamingResponse
 import asyncio
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import random
+
+def _sse_now():
+    return datetime.now(timezone.utc)
 
 @app.get("/api/v1/simulate/day")
 async def simulate_day(region_code: str = "BD"):
     """
-    Simulate 24h in ~60 seconds via SSE.
+    Simulate 24h in ~60 seconds via SSE. Market-ready with error handling and keep-alive.
     """
     async def event_generator():
-        from app.data.synthetic import generate_solar_timeseries, generate_demand_timeseries, generate_price_carbon_forecasts
-        solar_fc, _, _ = generate_solar_timeseries(23.8, 90.4, 500, 23, 24)
-        demand_fc = generate_demand_timeseries(region_code, 3, 24)
-        price, carbon = generate_price_carbon_forecasts(region_code, 24)
-        for h in range(24):
-            data = {
-                "hour": h,
-                "solar_p50": solar_fc[h]["p50"] if h < len(solar_fc) else 0,
-                "demand_p50": demand_fc[h]["p50"] if h < len(demand_fc) else 0,
-                "price": price[h],
-                "carbon": carbon[h],
-                "timestamp": (datetime.utcnow() + timedelta(hours=h)).isoformat()
-            }
-            yield f"data: {json.dumps(data)}\n\n"
-            await asyncio.sleep(2)
-        yield f"data: {json.dumps({'done': True})}\n\n"
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+        try:
+            from app.data.synthetic import generate_solar_timeseries, generate_demand_timeseries, generate_price_carbon_forecasts
+            solar_fc, _, _ = generate_solar_timeseries(23.8, 90.4, 500, 23, 24, start_dt=_sse_now())
+            demand_fc = generate_demand_timeseries(region_code, 3, 24, start_dt=_sse_now())
+            price, carbon = generate_price_carbon_forecasts(region_code, 24)
+            for h in range(24):
+                try:
+                    data = {
+                        "hour": h,
+                        "solar_p50": solar_fc[h]["p50"] if h < len(solar_fc) else 0,
+                        "demand_p50": demand_fc[h]["p50"] if h < len(demand_fc) else 0,
+                        "price": price[h] if h < len(price) else 0,
+                        "carbon": carbon[h] if h < len(carbon) else 0,
+                        "timestamp": (_sse_now() + timedelta(hours=h)).isoformat()
+                    }
+                    yield f"data: {json.dumps(data)}\n\n"
+                    await asyncio.sleep(2)
+                except asyncio.CancelledError:
+                    break
+                except Exception as ex:
+                    yield f"data: {json.dumps({'error': str(ex)[:100]})}\n\n"
+                    break
+            yield f"data: {json.dumps({'done': True})}\n\n"
+        except Exception as outer:
+            yield f"data: {json.dumps({'error': 'simulation failed', 'detail': str(outer)[:200]})}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
+    return StreamingResponse(event_generator(), media_type="text/event-stream", headers={
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no",
+        "Access-Control-Allow-Origin": "*"
+    })
 
 if __name__ == "__main__":
     import uvicorn

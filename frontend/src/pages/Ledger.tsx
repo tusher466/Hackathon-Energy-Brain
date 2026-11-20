@@ -25,16 +25,16 @@ export default function Ledger() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between">
-        <div>
-          <h1 className="font-serif text-[32px] font-semibold">Carbon and Cost Ledger • Proof</h1>
-          <p className="text-[13px] text-fg-muted mt-1">Every decision logged in SQLite via SQLAlchemy. Cumulative savings with methodology tooltip. Exportable CSV + printable report. Currency follows region.</p>
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex flex-col lg:flex-row lg:justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-serif text-[24px] sm:text-[32px] font-semibold break-words">Carbon and Cost Ledger • Proof</h1>
+          <p className="text-[12px] sm:text-[13px] text-fg-muted mt-1 leading-relaxed">Every decision logged in SQLite via SQLAlchemy. Cumulative savings with methodology tooltip. Exportable CSV + printable report. Currency follows region.</p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={exportCSV} className="px-3 py-2 rounded border text-[12px] flex items-center gap-2"><Download className="w-4 h-4" /> Export CSV</button>
-          <button onClick={()=>api.ledgerReset().then(load)} className="px-3 py-2 rounded border text-[12px] flex items-center gap-2"><Trash2 className="w-4 h-4" /> Reset</button>
-          <select value={method} onChange={e=>setMethod(e.target.value as any)} className="bg-ink-800 border rounded px-3 py-2 text-[12px]"><option value="marginal">Marginal emissions</option><option value="average">Average emissions</option></select>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <button onClick={exportCSV} className="px-3 py-2 rounded border text-[12px] flex items-center gap-2 shrink-0"><Download className="w-4 h-4" /> Export CSV</button>
+          <button onClick={()=>api.ledgerReset().then(load)} className="px-3 py-2 rounded border text-[12px] flex items-center gap-2 shrink-0"><Trash2 className="w-4 h-4" /> Reset</button>
+          <select value={method} onChange={e=>setMethod(e.target.value as any)} className="bg-ink-800 border rounded px-3 py-2 text-[12px] shrink-0"><option value="marginal">Marginal emissions</option><option value="average">Average emissions</option></select>
         </div>
       </div>
 

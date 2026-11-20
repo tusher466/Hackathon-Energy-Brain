@@ -1,7 +1,15 @@
 import numpy as np
 import math
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
+
+def _utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+def _rng(seed=None):
+    if seed is None:
+        return np.random.default_rng()
+    return np.random.default_rng(seed)
 
 def clear_sky_irradiance(hour: float, lat: float, day_of_year: int, tilt_deg: float, capacity_kw: float) -> float:
     """Simple clear-sky model: solar geometry * capacity."""
@@ -30,23 +38,23 @@ def clear_sky_irradiance(hour: float, lat: float, day_of_year: int, tilt_deg: fl
     return float(max(0, power))
 
 def generate_cloud_field(size=32, cloud_cover=0.4, seed=None) -> np.ndarray:
-    if seed is not None:
-        np.random.seed(seed)
+    rng = _rng(seed)
     # Perlin-like noise via filtered uniform
-    field = np.random.rand(size, size)
+    field = rng.random((size, size))
     # smooth
     from scipy.ndimage import gaussian_filter
     field = gaussian_filter(field, sigma=2.0)
     # threshold to create clouds
     threshold = np.quantile(field, 1 - cloud_cover)
-    cloud_transmission = np.where(field > threshold, np.random.uniform(0.2, 0.7, size=(size,size)), 1.0)
+    cloud_transmission = np.where(field > threshold, rng.uniform(0.2, 0.7, size=(size,size)), 1.0)
     # random variation 0.8-1.0 for clear
-    cloud_transmission = np.clip(cloud_transmission + np.random.normal(0, 0.05, size=(size,size)), 0.1, 1.0)
+    cloud_transmission = np.clip(cloud_transmission + rng.normal(0, 0.05, size=(size,size)), 0.1, 1.0)
     return cloud_transmission
 
-def advect_cloud_field(field: np.ndarray, wind_vector: Tuple[float,float], steps: int = 5) -> List[np.ndarray]:
+def advect_cloud_field(field: np.ndarray, wind_vector: Tuple[float,float], steps: int = 5, seed=None) -> List[np.ndarray]:
     """Advect field by wind vector (vx, vy) in pixels per step."""
     from scipy.ndimage import shift
+    rng = _rng(seed)
     frames = []
     current = field.copy()
     for i in range(steps):
@@ -54,15 +62,16 @@ def advect_cloud_field(field: np.ndarray, wind_vector: Tuple[float,float], steps
         # shift
         current = shift(current, shift=wind_vector, mode='wrap', order=1)
         # add small evolution
-        current = np.clip(current + np.random.normal(0, 0.02, size=current.shape), 0.1, 1.0)
+        current = np.clip(current + rng.normal(0, 0.02, size=current.shape), 0.1, 1.0)
     return frames
 
 def generate_solar_timeseries(lat, lon, capacity_kw, tilt_deg, horizon_hours, start_dt: datetime = None):
     if start_dt is None:
-        start_dt = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+        start_dt = _utcnow().replace(minute=0, second=0, microsecond=0)
     day_of_year = start_dt.timetuple().tm_yday
-    cloud_base = generate_cloud_field(size=32, cloud_cover=0.35, seed=int(lat*10) % 1000)
-    wind_vec = (np.random.uniform(-1.5, 1.5), np.random.uniform(-0.5, 1.5))
+    cloud_base = generate_cloud_field(size=32, cloud_cover=0.35, seed=int(abs(lat*10)) % 1000)
+    rng = _rng(int(abs(lon*10+lat*10)) % 10000)
+    wind_vec = (float(rng.uniform(-1.5, 1.5)), float(rng.uniform(-0.5, 1.5)))
     cloud_frames = advect_cloud_field(cloud_base, wind_vec, steps=min(horizon_hours, 24))
     # Repeat to cover horizon
     extended_frames = []
@@ -93,9 +102,10 @@ def generate_solar_timeseries(lat, lon, capacity_kw, tilt_deg, horizon_hours, st
         })
     return forecast, extended_frames, wind_vec
 
-def generate_demand_timeseries(region_code: str, sites: int, horizon_hours: int, start_dt: datetime = None):
+def generate_demand_timeseries(region_code: str, sites: int, horizon_hours: int, start_dt: datetime = None, seed=None):
     if start_dt is None:
-        start_dt = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+        start_dt = _utcnow().replace(minute=0, second=0, microsecond=0)
+    rng = _rng(seed if seed is not None else hash((region_code, sites, horizon_hours)) % (2**32))
     # base patterns per region
     if region_code == "BD":
         base_load = 400  # kW per site
@@ -124,14 +134,14 @@ def generate_demand_timeseries(region_code: str, sites: int, horizon_hours: int,
         if hour in peak_hours:
             daily_profile *= 1.4
         # temperature effect
-        temp = 25 + 10*math.sin(2*math.pi*h/24) + np.random.normal(0,1)
+        temp = 25 + 10*math.sin(2*math.pi*h/24) + float(rng.normal(0,1))
         temp_effect = 1 + temp_sensitivity * max(0, temp-22)/10
 
         # economic indicator - slow varying
         economic = 1.0 + 0.1*math.sin(2*math.pi*h/(24*30))
 
         p50 = base_load * sites * daily_profile * temp_effect * economic
-        p50 += np.random.normal(0, base_load*0.05)
+        p50 += float(rng.normal(0, base_load*0.05))
         # quantile spread
         spread = 0.15 + 0.002*h
         p10 = p50 * (1 - spread)
@@ -145,23 +155,23 @@ def generate_demand_timeseries(region_code: str, sites: int, horizon_hours: int,
         })
     return forecasts
 
-def generate_price_carbon_forecasts(region_code: str, horizon: int):
+def generate_price_carbon_forecasts(region_code: str, horizon: int, seed=None):
     # Use region profile
     from app.data.regions import get_region
     reg = get_region(region_code)
     prices = []
     carbons = []
-    np.random.seed(horizon)
+    rng = _rng(seed if seed is not None else hash((region_code, horizon)) % (2**32))
     for h in range(horizon):
         hour = h % 24
         if hour in reg.peak_hours:
-            price = reg.price_per_kwh_peak + np.random.normal(0, reg.price_per_kwh_peak*0.1)
-            carbon = reg.carbon_factor_marginal_kg_per_kwh + np.random.normal(0, 0.05)
+            price = reg.price_per_kwh_peak + float(rng.normal(0, reg.price_per_kwh_peak*0.1))
+            carbon = reg.carbon_factor_marginal_kg_per_kwh + float(rng.normal(0, 0.05))
         elif 0 <= hour <= 5:
-            price = reg.price_per_kwh_night + np.random.normal(0, reg.price_per_kwh_night*0.05)
+            price = reg.price_per_kwh_night + float(rng.normal(0, reg.price_per_kwh_night*0.05))
             carbon = reg.carbon_factor_avg_kg_per_kwh * 0.9
         else:
-            price = reg.price_per_kwh_day + np.random.normal(0, reg.price_per_kwh_day*0.08)
+            price = reg.price_per_kwh_day + float(rng.normal(0, reg.price_per_kwh_day*0.08))
             carbon = reg.carbon_factor_avg_kg_per_kwh
         prices.append(max(0.01, float(price)))
         carbons.append(max(0.05, float(carbon)))
@@ -169,10 +179,9 @@ def generate_price_carbon_forecasts(region_code: str, horizon: int):
 
 def generate_thermal_image(seed=None, width=640, height=480):
     """Generate synthetic thermal drone image of PV array."""
-    if seed is not None:
-        np.random.seed(seed)
+    rng = _rng(seed)
     # background
-    img = np.random.normal(30, 2, (height, width))  # temperature C
+    img = rng.normal(30, 2, (height, width))  # temperature C
     # Draw panels as rectangles
     panel_temps = []
     num_rows = 6
@@ -187,30 +196,30 @@ def generate_thermal_image(seed=None, width=640, height=480):
             y2 = y1 + int(panel_h*0.8)
             x2 = x1 + int(panel_w*0.8)
             # base panel temp 45C
-            base = 45 + np.random.normal(0,1)
-            img[y1:y2, x1:x2] = base + np.random.normal(0,0.5, (y2-y1, x2-x1))
+            base = 45 + float(rng.normal(0,1))
+            img[y1:y2, x1:x2] = base + rng.normal(0,0.5, (y2-y1, x2-x1))
             panel_temps.append((r,c,base,x1,y1,x2,y2))
     # inject defects
-    num_defects = np.random.randint(3,8)
+    num_defects = int(rng.integers(3,8))
     for i in range(num_defects):
-        idx = np.random.randint(0, len(panel_temps))
+        idx = int(rng.integers(0, len(panel_temps)))
         r,c,base,x1,y1,x2,y2 = panel_temps[idx]
-        defect_type = np.random.choice(["hotspot_cell", "bypass_diode", "soiling", "string_fault"])
+        defect_type = rng.choice(["hotspot_cell", "bypass_diode", "soiling", "string_fault"])
         if defect_type == "hotspot_cell":
             # small hot region
-            cx = np.random.randint(x1+5, x2-5)
-            cy = np.random.randint(y1+5, y2-5)
-            img[cy-5:cy+5, cx-5:cx+5] += np.random.uniform(15,35)
+            cx = int(rng.integers(x1+5, max(x1+6, x2-5)))
+            cy = int(rng.integers(y1+5, max(y1+6, y2-5)))
+            img[max(0,cy-5):cy+5, max(0,cx-5):cx+5] += float(rng.uniform(15,35))
             temp_delta = 20.0
         elif defect_type == "bypass_diode":
             # hot stripe across panel
-            img[y1:y1+5, x1:x2] += np.random.uniform(10,20)
+            img[y1:y1+5, x1:x2] += float(rng.uniform(10,20))
             temp_delta = 15.0
         elif defect_type == "soiling":
-            img[y1:y2, x1:x2] -= np.random.uniform(3,6)
+            img[y1:y2, x1:x2] -= float(rng.uniform(3,6))
             temp_delta = -4.0
         else: # string_fault
-            img[y1:y2, x1:x2] += np.random.uniform(5,10)
+            img[y1:y2, x1:x2] += float(rng.uniform(5,10))
             temp_delta = 8.0
         defects.append({
             "panel_row": r,

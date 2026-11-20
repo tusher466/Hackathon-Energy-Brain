@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.services.ledger_service import LedgerEntryDB, ApprovalDB, get_summary, list_entries
 from app.schemas.common import LedgerSummary, LedgerEntry, ApprovalItem
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
+
+def _now():
+    return datetime.now(timezone.utc)
 
 router = APIRouter(prefix="/ledger", tags=["ledger"])
 
@@ -87,9 +91,9 @@ def decide_approval(approval_id: str, decision: str, db: Session = Depends(get_d
     # decision: approve, reject
     entry = db.query(ApprovalDB).filter(ApprovalDB.id == approval_id).first()
     if not entry:
-        return {"error": "not found"}
+        raise HTTPException(status_code=404, detail="approval not found")
     if decision not in ["approve","reject"]:
-        return {"error": "invalid decision"}
+        raise HTTPException(status_code=400, detail="invalid decision use approve/reject")
     entry.status = "approved" if decision=="approve" else "rejected"
     db.commit()
     return {"id": entry.id, "status": entry.status}
@@ -102,9 +106,18 @@ def reset_ledger(db: Session = Depends(get_db)):
     return {"status": "reset"}
 
 @router.get("/export/csv")
-def export_csv(db: Session = Depends(get_db)):
+def export_csv(db: Session = Depends(get_db), format: str = "json"):
+    """
+    Export ledger as JSON containing csv string (default for frontend compatibility)
+    and also supports ?format=csv for direct text/csv download (market-ready).
+    """
     entries = list_entries(db, limit=1000)
     lines = ["id,timestamp,module,action,cost_saved,co2_avoided_kg,peak_shaved_kw,region_code"]
     for e in entries:
-        lines.append(f"{e.id},{e.timestamp},{e.module},{e.action},{e.cost_saved},{e.co2_avoided_kg},{e.peak_shaved_kw},{e.region_code}")
-    return {"csv": "\n".join(lines)}
+        # escape commas in action by quoting
+        action_escaped = str(e.action).replace(',', ';')
+        lines.append(f"{e.id},{e.timestamp},{e.module},{action_escaped},{e.cost_saved},{e.co2_avoided_kg},{e.peak_shaved_kw},{e.region_code}")
+    csv_text = "\n".join(lines)
+    if format == "csv":
+        return PlainTextResponse(csv_text, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=ledger.csv"})
+    return {"csv": csv_text}
