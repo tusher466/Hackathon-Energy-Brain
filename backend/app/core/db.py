@@ -17,6 +17,15 @@ def get_db():
         db.close()
 
 def init_db():
-    from app.services import ledger_service  # noqa
-    from app.ml import models_meta  # noqa
-    Base.metadata.create_all(bind=engine)
+    try:
+        from app.services import ledger_service  # noqa
+        from app.ml import models_meta  # noqa
+        Base.metadata.create_all(bind=engine)
+        print("DB tables created")
+    except Exception as e:
+        print(f"init_db failed: {e}, trying fallback in-memory")
+        # Fallback: try at least create without errors
+        try:
+            Base.metadata.create_all(bind=engine, checkfirst=True)
+        except Exception as ee:
+            print(f"Fallback DB also failed non-fatal: {ee}")

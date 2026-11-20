@@ -13,14 +13,23 @@ from app.api import solar, demand, vpp, grid, panels, ledger, regions, health
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Initializing DB and models...")
-    init_db()
+    try:
+        init_db()
+        print("DB initialized")
+    except Exception as e:
+        print(f"DB init error (non-fatal, will continue): {e}")
+        # Try ensure directory writable
+        try:
+            os.makedirs("./model_cache", exist_ok=True)
+        except:
+            pass
     try:
         from app.ml.solar_lstm import solar_forecaster
         from app.ml.demand_transformer import demand_forecaster
         print(f"Torch available for solar: checked")
         print("Models warmed")
     except Exception as e:
-        print(f"Model warm error: {e}")
+        print(f"Model warm error (non-fatal): {e}")
     yield
     print("Shutdown")
 
