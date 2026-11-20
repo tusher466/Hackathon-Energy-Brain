@@ -71,3 +71,54 @@ Browser → https://frontend.onrender.com (static SPA)
 ```
 
 Pushing new commits to `main` auto-triggers redeploy if auto-deploy enabled.
+
+## Troubleshooting – Your Screenshot Error Fixed
+
+**Error log you saw:**
+```
+#1 [internal] load build definition from Dockerfile
+...
+error: failed to solve: failed to read dockerfile: open Dockerfile: no such file or directory
+```
+
+**Root cause:** You created a Web Service manually with **Environment: Docker** pointing to repository root. Render then looks for `Dockerfile` in root, but we only had `backend/Dockerfile` and `frontend/Dockerfile`. So it failed.
+
+**Fix applied (commit 5ed6fad):**
+1. Added root `Dockerfile` that builds backend (python:3.11-slim, installs opencv deps, copies `backend/`, runs `uvicorn` with `$PORT`):
+   ```dockerfile
+   FROM python:3.11-slim
+   WORKDIR /app
+   RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
+   COPY backend/requirements.txt ./
+   RUN pip install --no-cache-dir -r requirements.txt
+   COPY backend/ ./
+   EXPOSE 8000
+   CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+   ```
+2. Switched `render.yaml` backend from `env: python` to `env: docker` with:
+   ```yaml
+   dockerfilePath: ./Dockerfile
+   dockerContext: .
+   ```
+3. Added `.dockerignore`
+4. Pushed to `main` → Render auto-redeploys. Manual Docker service now finds root Dockerfile and builds successfully.
+
+**If still failing:**
+- Go to Render Dashboard → your service → **Manual Deploy → Clear build cache & Deploy**
+- Ensure service Type is **Docker** for backend (or use Blueprint which creates correct type). For Blueprint: **New → Blueprint → select repo** – it will read `render.yaml` and create both services correctly.
+- Frontend must be **Static Site**, not Docker. If you created frontend as Docker, delete and recreate as Static with Root Dir `frontend`, Build `npm install && npm run build`, Publish `dist`, rewrite `/* → /index.html`.
+
+**Expected successful logs after fix:**
+```
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 457B done
+...
+#5 [2/4] COPY backend/requirements.txt ./requirements.txt
+#6 [3/4] RUN pip install ...
+#7 DONE
+==> Build successful
+==> Starting service with 'uvicorn app.main:app --host 0.0.0.0 --port $PORT'
+INFO: Application startup complete.
+```
+
+Backend health check `GET /health` should return 200.
