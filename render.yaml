@@ -38,6 +38,15 @@ services:
       - key: VITE_API_URL
         value: https://energy-brain-backend.onrender.com
 
+  # --- Landing Page: Static HTML/CSS only ---
+  - type: web
+    name: energy-brain-landing
+    env: static
+    region: singapore
+    plan: free
+    rootDir: landing
+    staticPublishPath: ./
+
   # --- Alternative Python native backend (if you prefer buildpack, disable Docker one above) ---
   # - type: web
   #   name: energy-brain-backend-python
