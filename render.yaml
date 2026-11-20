@@ -1,32 +1,42 @@
 services:
-  # --- Backend: Docker mode (robust for Render manual Docker service) ---
+  # --- Backend: Docker mode (robust, market-ready single URL serves full-stack) ---
   - type: web
     name: energy-brain-backend
     env: docker
     region: singapore
     plan: free
+    branch: main
+    autoDeploy: true
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /health
     envVars:
       - key: DEBUG
         value: false
+      - key: PYTHON_VERSION
+        value: 3.11.0
       - key: CORS_ORIGINS
-        value: https://energy-brain-frontend.onrender.com,http://localhost:5173,https://hackathon-energy-brain-frontend.onrender.com
-      # Optional: add your keys in Render dashboard (do not commit secrets)
+        value: https://energy-brain-frontend.onrender.com,http://localhost:5173,https://hackathon-energy-brain-frontend.onrender.com,https://hackathon-energy-brain-1.onrender.com,https://energy-brain-landing.onrender.com,https://energy-brain-backend.onrender.com,*
+      - key: DATABASE_URL
+        value: sqlite:///./energy_brain.db
+      # Optional live keys - set in dashboard, do not commit
       # - key: NREL_API_KEY
       #   sync: false
       # - key: OPENAI_API_KEY
       #   sync: false
       # - key: ANTHROPIC_API_KEY
       #   sync: false
+      # - key: ELECTRICITYMAPS_API_KEY
+      #   sync: false
 
-  # --- Frontend: Static SPA with rewrite ---
+  # --- Frontend: Static SPA with rewrite (optional, backend already serves frontend same-origin) ---
   - type: web
     name: energy-brain-frontend
     env: static
     region: singapore
     plan: free
+    branch: main
+    autoDeploy: true
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
@@ -44,6 +54,8 @@ services:
     env: static
     region: singapore
     plan: free
+    branch: main
+    autoDeploy: true
     rootDir: landing
     staticPublishPath: ./
 

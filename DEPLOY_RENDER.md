@@ -1,24 +1,26 @@
-# Deploy Energy Brain to Render – Step by Step
+# Deploy Energy Brain to Render – Step by Step (Market-Ready Updated)
 
-Repo already pushed to https://github.com/tusher466/Hackathon-Energy-Brain with `render.yaml` blueprint.
+Repo already pushed to https://github.com/tusher466/Hackathon-Energy-Brain with `render.yaml` blueprint that now has `branch: main` and `autoDeploy: true` on all 3 services.
 
-## Option A – Blueprint (Recommended, 2 services auto)
+## Option A – Blueprint (Recommended, 3 services auto - market ready)
 
 1. Go to https://dashboard.render.com/ → **New +** → **Blueprint**
 2. Connect GitHub account and select repo `tusher466/Hackathon-Energy-Brain`
-3. Render detects `render.yaml` with 2 services:
-   - `energy-brain-backend` (Python)
-   - `energy-brain-frontend` (Static)
+3. Render detects `render.yaml` with 3 services (now market-ready with branch + autoDeploy):
+   - `energy-brain-backend` (Docker, single URL serves full-stack frontend+backend)
+   - `energy-brain-frontend` (Static, optional)
+   - `energy-brain-landing` (Static)
 4. Click **Apply**. Render will:
-   - Build backend: `pip install -r requirements.txt`
-   - Start backend: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - Health check `/health`
-   - Build frontend: `npm install && npm run build`
+   - Build backend Docker multi-stage: `node:20-alpine` builds frontend with `VITE_API_URL=""` same-origin, then `python:3.11-slim` installs deps, copies `frontend/dist` → `./frontend/dist` + `./static`, runs `uvicorn` with 2 workers and `HEALTHCHECK curl /health`
+   - Health check `/health` must return 200
+   - Build frontend static: `npm install && npm run build`
    - Publish `frontend/dist` with SPA rewrite `/* → /index.html`
-5. After first deploy, backend URL will be `https://energy-brain-backend.onrender.com`
-   - If frontend built before backend URL known, set env var `VITE_API_URL` in frontend service to backend URL and **Manual Deploy → Clear build cache & Deploy**
-6. Set CORS in backend: In Render dashboard → backend service → Environment → add `CORS_ORIGINS` = `https://energy-brain-frontend.onrender.com,https://your-frontend-url.onrender.com`
-7. Optional secrets: add `NREL_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` in backend env (sync: false). App works without them – synthetic fallback.
+5. After first deploy, backend URL will be `https://energy-brain-backend.onrender.com` – this single URL now serves BOTH API AND frontend (because root Dockerfile bundles frontend). So `https://energy-brain-backend.onrender.com/` loads control room, `/api/v1/...` still API, `/docs` API docs, `/landing` landing page.
+   - If you use separate frontend static service, its URL e.g. `https://energy-brain-frontend.onrender.com` will call backend via `VITE_API_URL=https://energy-brain-backend.onrender.com` set in `render.yaml:39`
+   - If frontend built before backend URL known, update env var `VITE_API_URL` in frontend service to backend URL and **Manual Deploy → Clear build cache & Deploy**
+6. CORS is now market-ready: `render.yaml:14` sets `CORS_ORIGINS` to include all Render domains plus `*` → backend `app/core/config.py:21` defaults allow all `*`, and `app/main.py:36` correctly sets `allow_credentials=False` when `*` present. So frontend static can call backend even with changing URLs.
+7. Optional secrets: add `NREL_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `ELECTRICITYMAPS_API_KEY` in backend env dashboard (sync: false). App works without them – synthetic fallback offline-first.
+8. **Auto-Update**: All services now have `branch: main` and `autoDeploy: true` in `render.yaml:7,32,47`. Every `git push origin main` (like `e3539e8 market-ready` and this new deploy fix) auto-triggers redeploy. Verify in Dashboard → Service → Events → Deploy triggered via git push. If you created services manually (not Blueprint), go to Service → Settings → Build & Deploy → Auto-Deploy ON, Branch main, DockerfilePath ./Dockerfile, Context .
 
 ## Option B – Manual 2 Services
 

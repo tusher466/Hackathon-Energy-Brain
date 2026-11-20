@@ -17,8 +17,8 @@ class Settings(BaseSettings):
     anthropic_api_key: Optional[str] = None
     electricitymaps_api_key: Optional[str] = None
 
-    # CORS
-    cors_origins: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173"
+    # CORS - market-ready: allow * plus common render domains by default, override via env CORS_ORIGINS
+    cors_origins: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,https://energy-brain-frontend.onrender.com,https://energy-brain-backend.onrender.com,https://hackathon-energy-brain-1.onrender.com,*"
 
     # Model cache dir
     model_cache_dir: str = "./model_cache"

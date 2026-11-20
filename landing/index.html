@@ -32,7 +32,8 @@
       </nav>
       <div class="top-actions">
         <a class="btn btn-ghost" href="https://github.com/tusher466/Hackathon-Energy-Brain" target="_blank">GitHub</a>
-        <a class="btn btn-primary" href="https://hackathon-energy-brain-1.onrender.com" target="_blank">Live Control Room</a>
+        <a class="btn btn-primary" href="https://energy-brain-backend.onrender.com" target="_blank">Live Control Room (Market)</a>
+        <a class="btn btn-ghost" href="https://hackathon-energy-brain-1.onrender.com" target="_blank" style="margin-left:8px">Legacy Live</a>
       </div>
     </div>
   </header>
@@ -317,8 +318,9 @@ All → SQLite ledger → cumulative $/CO₂/peak + CSV</pre>
       <h2>Live on Render — single URL serves full-stack</h2>
       <p>Backend health check `/health` returns 200. Frontend dist bundled into backend static. No placeholder, every button does something, offline-first synthetic fallback.</p>
       <div class="cta-actions">
-        <a class="btn btn-primary large" href="https://hackathon-energy-brain-1.onrender.com" target="_blank">Open Live App</a>
-        <a class="btn btn-ghost large" href="https://hackathon-energy-brain-1.onrender.com/docs" target="_blank">OpenAPI Docs</a>
+        <a class="btn btn-primary large" href="https://energy-brain-backend.onrender.com" target="_blank">Open Live App (Market)</a>
+        <a class="btn btn-ghost large" href="https://energy-brain-backend.onrender.com/docs" target="_blank">OpenAPI Docs</a>
+        <a class="btn btn-ghost large" href="https://energy-brain-frontend.onrender.com" target="_blank">Frontend Static</a>
         <a class="btn btn-ghost large" href="https://github.com/tusher466/Hackathon-Energy-Brain" target="_blank">GitHub Repo</a>
       </div>
       <div class="mono">uvicorn app.main:app --host 0.0.0.0 --port $PORT • npm run build • VITE_API_URL="" for same-origin</div>

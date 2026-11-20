@@ -33,12 +33,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS
+# CORS - market-ready: if * in list allow all origins, else use list
 origins = settings.cors_origins_list
+allow_all = "*" in origins or any(o.strip() == "*" for o in origins)
+# Also allow all Render subdomains pattern via wildcard handling by allowing all if * present
+final_origins = ["*"] if allow_all else origins
+# When allow_all is True we must set allow_credentials False per CORS spec for * wildcard
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins if origins != ["*"] else ["*"],
-    allow_credentials=True,
+    allow_origins=final_origins,
+    allow_credentials=not allow_all,
     allow_methods=["*"],
     allow_headers=["*"],
 )
