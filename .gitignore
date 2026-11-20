@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+venv/
+*.db
+*.sqlite3
+model_cache/
+backend/energy_brain.db
+backend/app/__pycache__/
+*.log
+*.sqlite
+
+# Node
+node_modules/
+frontend/dist/
+frontend/node_modules/.vite/
+.DS_Store
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+*.log
+backend.log
+frontend.log
+
+# Env
+.env.local
+.env.development.local
+.env.production.local
