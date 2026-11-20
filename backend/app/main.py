@@ -76,6 +76,26 @@ def find_frontend_dist():
 
 frontend_dist = find_frontend_dist()
 
+def find_landing():
+    candidates = [
+        Path(__file__).parent.parent / "landing",           # backend/landing
+        Path(__file__).parent.parent.parent / "landing",   # project root landing
+        Path("/app/landing"),
+        Path("landing"),
+        Path("../landing"),
+        Path(__file__).parent / "landing",
+    ]
+    for p in candidates:
+        if p.exists() and (p / "index.html").exists():
+            return p.resolve()
+    return None
+
+landing_dist = find_landing()
+if landing_dist:
+    print(f"Found landing at {landing_dist}, mounting at /landing")
+else:
+    print("Landing not found")
+
 # Define /api info BEFORE mounting frontend so it takes precedence
 @app.get("/api")
 def api_info():
@@ -88,6 +108,10 @@ def api_info():
         "frontend": f"served from {frontend_dist}" if frontend_dist else "not bundled, build frontend"
     }
 
+if landing_dist:
+    print(f"Found landing at {landing_dist}, mounting at /landing")
+    app.mount("/landing", StaticFiles(directory=str(landing_dist), html=True), name="landing")
+
 if frontend_dist:
     print(f"Found frontend dist at {frontend_dist}, mounting static files for full-stack deploy")
     # Mount assets if exists (vite puts assets in /assets)
@@ -99,17 +123,30 @@ if frontend_dist:
     # API routes defined above take precedence
     app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
 else:
-    print("Frontend dist not found, serving API only mode")
-    @app.get("/")
-    def root():
-        return {
-            "name": settings.app_name,
-            "version": settings.version,
-            "docs": "/docs",
-            "api_prefix": settings.api_v1_prefix,
-            "message": "Energy Brain API - control room at dusk. Forecast -> Optimize -> Act -> Explain -> Measure",
-            "note": "Frontend not bundled. Deploy frontend separately or build it (npm run build in frontend/)"
-        }
+    if not landing_dist:
+        print("Frontend dist not found, serving API only mode")
+        @app.get("/")
+        def root():
+            return {
+                "name": settings.app_name,
+                "version": settings.version,
+                "docs": "/docs",
+                "api_prefix": settings.api_v1_prefix,
+                "message": "Energy Brain API - control room at dusk. Forecast -> Optimize -> Act -> Explain -> Measure",
+                "note": "Frontend not bundled. Deploy frontend separately or build it (npm run build in frontend/)",
+                "landing": "/landing if exists"
+            }
+    else:
+        # If only landing exists, serve landing at root as well for convenience
+        print("Only landing found, serving landing at / and control room not bundled")
+        @app.get("/api/root")
+        def root_api():
+            return {
+                "name": settings.app_name,
+                "message": "API only, frontend not bundled, but landing at /landing and /"
+            }
+        # Also mount landing at / as fallback if no frontend
+        app.mount("/", StaticFiles(directory=str(landing_dist), html=True), name="landing_root")
 
 # For sse simulation endpoint
 from fastapi.responses import StreamingResponse
