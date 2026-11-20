@@ -1,21 +1,19 @@
 services:
+  # --- Backend: Docker mode (robust for Render manual Docker service) ---
   - type: web
     name: energy-brain-backend
-    env: python
+    env: docker
     region: singapore
     plan: free
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /health
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
       - key: DEBUG
         value: false
       - key: CORS_ORIGINS
-        value: https://energy-brain-frontend.onrender.com,http://localhost:5173
-      # Optional: add your keys in Render dashboard
+        value: https://energy-brain-frontend.onrender.com,http://localhost:5173,https://hackathon-energy-brain-frontend.onrender.com
+      # Optional: add your keys in Render dashboard (do not commit secrets)
       # - key: NREL_API_KEY
       #   sync: false
       # - key: OPENAI_API_KEY
@@ -23,6 +21,7 @@ services:
       # - key: ANTHROPIC_API_KEY
       #   sync: false
 
+  # --- Frontend: Static SPA with rewrite ---
   - type: web
     name: energy-brain-frontend
     env: static
@@ -38,3 +37,17 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://energy-brain-backend.onrender.com
+
+  # --- Alternative Python native backend (if you prefer buildpack, disable Docker one above) ---
+  # - type: web
+  #   name: energy-brain-backend-python
+  #   env: python
+  #   region: singapore
+  #   plan: free
+  #   rootDir: backend
+  #   buildCommand: pip install -r requirements.txt
+  #   startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+  #   healthCheckPath: /health
+  #   envVars:
+  #     - key: PYTHON_VERSION
+  #       value: 3.11.0
